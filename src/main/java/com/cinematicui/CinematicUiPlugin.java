@@ -50,6 +50,7 @@ import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.gameval.InterfaceID;
@@ -92,6 +93,12 @@ public class CinematicUiPlugin extends Plugin
 	// Ticks after the last hitsplat that still count as being in combat.
 	private static final int COMBAT_TIMEOUT_TICKS = 10;
 
+	// A click this soon after the window regains focus doesn't wake the interface.
+	private static final long FOCUS_CLICK_GRACE_MS = 300;
+
+	// How long the mouse must rest on an element before it wakes, so passing over it doesn't count.
+	private static final long HOVER_DWELL_MS = 200;
+
 	// How often the hover area of each element is measured.
 	private static final long BOUNDS_REFRESH_MS = 200;
 
@@ -133,6 +140,9 @@ public class CinematicUiPlugin extends Plugin
 	private volatile boolean hotkeyFaded;
 	private volatile boolean idleFaded;
 	private volatile boolean faded;
+	private volatile boolean mouseInCanvas = true;
+	private volatile boolean mouseReentered;
+	private volatile long focusGained;
 
 	private long lastFrame;
 	private boolean lowStats;
@@ -207,8 +217,29 @@ public class CinematicUiPlugin extends Plugin
 	private final MouseAdapter activityMouseListener = new MouseAdapter()
 	{
 		@Override
+		public MouseEvent mouseEntered(MouseEvent e)
+		{
+			mouseInCanvas = true;
+			mouseReentered = true;
+			return e;
+		}
+
+		@Override
+		public MouseEvent mouseExited(MouseEvent e)
+		{
+			// The game keeps the last position after the mouse leaves, so remember that it's gone
+			mouseInCanvas = false;
+			return e;
+		}
+
+		@Override
 		public MouseEvent mouseMoved(MouseEvent e)
 		{
+			if (!mouseInCanvas)
+			{
+				mouseReentered = true;
+			}
+			mouseInCanvas = true;
 			mouseActivity();
 			return e;
 		}
@@ -223,6 +254,12 @@ public class CinematicUiPlugin extends Plugin
 		@Override
 		public MouseEvent mousePressed(MouseEvent e)
 		{
+			if (System.currentTimeMillis() - focusGained < FOCUS_CLICK_GRACE_MS)
+			{
+				// This click is just bringing the window back into focus
+				return e;
+			}
+
 			// A click anywhere ends the fade, however it started
 			hotkeyFaded = false;
 			idleFaded = false;
@@ -324,6 +361,15 @@ public class CinematicUiPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onFocusChanged(FocusChanged event)
+	{
+		if (event.isFocused())
+		{
+			focusGained = System.currentTimeMillis();
+		}
+	}
+
+	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
 		ChatMessageType type = event.getType();
@@ -387,13 +433,15 @@ public class CinematicUiPlugin extends Plugin
 			|| (showInActivities && isActivityHudOpen()) || (showInWilderness && isInWilderness());
 		updatePlugins(!globalWake, now);
 
-		Point mouse = client.getMouseCanvasPosition();
+		Point mouse = mouseInCanvas ? client.getMouseCanvasPosition() : null;
+		boolean reentered = mouseReentered;
+		mouseReentered = false;
 		boolean hoverAny = false;
 		for (Map.Entry<UiElement, ElementState> entry : elements.entrySet())
 		{
 			ElementState state = entry.getValue();
 			boolean inside = state.bounds != null && mouse != null && state.bounds.contains(mouse.getX(), mouse.getY());
-			if (wasGlobalWake && !globalWake)
+			if ((wasGlobalWake && !globalWake) || reentered)
 			{
 				// The fade is starting. A mouse that is already resting on an element, such as after
 				// clicking the minimap to walk, doesn't count as hovering until it leaves and comes back.
@@ -403,7 +451,16 @@ public class CinematicUiPlugin extends Plugin
 			{
 				state.hoverBlocked = false;
 			}
-			state.hovered = inside && !state.hoverBlocked;
+			boolean over = inside && !state.hoverBlocked;
+			if (!over)
+			{
+				state.hoverStart = 0;
+			}
+			else if (state.hoverStart == 0)
+			{
+				state.hoverStart = now;
+			}
+			state.hovered = over && now - state.hoverStart >= HOVER_DWELL_MS;
 			if (state.hovered)
 			{
 				state.lastHover = now;
@@ -999,6 +1056,7 @@ public class CinematicUiPlugin extends Plugin
 		boolean touched;
 		boolean hovered;
 		boolean hoverBlocked;
+		long hoverStart;
 		long lastHover;
 		long lastBoundsUpdate;
 		int generation;
