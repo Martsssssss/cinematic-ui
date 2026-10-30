@@ -4,7 +4,7 @@
 
 Fade or hide the game interface after a delay of your choosing, or straight away with a hotkey, for a clean view of the game.
 
-I made this plugin because I often have OSRS on my second monitor, and wanted to be able to hide the UI while I slowly whittle away at redwoods. So I made it customisable: you choose which parts of the interface fade, how far, how quickly and after how long.
+I made this plugin because I often have OSRS on my second monitor, and wanted to be able to hide the UI while I slowly whittle away at redwoods. It's customisable, so you can choose which parts of the UI stay on or fade, and how long before they do.
 
 ![The interface faded away](docs/screenshots/full-faded.png)
 
