@@ -4,9 +4,9 @@
 
 Fade or hide the game interface after a delay of your choosing, or straight away with a hotkey, for a clean view of the game.
 
-I made this plugin because I often have OSRS on my second monitor, and wanted to be able to hide the UI while I slowly whittle away at redwoods. So I made it customisable: you choose which parts of the interface fade, how far, how quickly and after how long, and it all comes back the moment you need it.
+I made this plugin because I often have OSRS on my second monitor, and wanted to be able to hide the UI while I slowly whittle away at redwoods. So I made it customisable: you choose which parts of the interface fade, how far, how quickly and after how long.
 
-![Before and after](docs/screenshots/full-faded.png)
+![The interface faded away](docs/screenshots/after.png)
 
 ## Features
 
@@ -14,18 +14,20 @@ I made this plugin because I often have OSRS on my second monitor, and wanted to
 
 - **Idle delay:** after this many seconds without moving the mouse or pressing a key, the interface fades. Set it to 0 to turn the timer off.
 - **Hotkey:** fades the interface straight away, or brings it back. It starts unbound, so set one in the plugin's settings if you want it.
-- **Fade amount:** how far the interface fades. Anything below 100% leaves it see-through and still clickable. At 100% it is hidden completely and can't be clicked.
 - **Fade speed:** Instant, Fast or Smooth. Coming back is always twice as quick as fading away.
 
-![Faded to 50%](docs/screenshots/half-faded.png)
+**Fade amount** sets how far the interface fades. At 100% it's hidden completely and can't be clicked. Anything lower leaves it see-through but still clickable, so you can keep using it. Here it is at 50%:
+
+![The interface at 50% fade](docs/screenshots/half-faded.png)
 
 ### Bringing it back
 
 - **Click or keypress:** a click anywhere, or any keypress, brings everything back. Moving the mouse around the game world doesn't, so the interface stays faded while you watch.
-- **Hover:** while faded, hovering over an element brings back just that element, or everything, depending on the **Hover wakes** setting. A single element fades again a second after you move off it.
 - **Chat:** typing in chat shows the chatbox for a few seconds, and so can a new private message. Text left sitting in the chatbox doesn't keep it on screen.
 
-![Hovering over the inventory](docs/screenshots/hover.png)
+**Hovering** over an element while it's faded brings back just that element, so you can check your inventory or minimap without bringing everything else back. It fades again a second after you move off it. If you'd rather hovering brought back everything, change **Hover wakes** in the settings. Here the inventory has been hovered while the rest stays hidden:
+
+![Hovering brings back just the inventory](docs/screenshots/hover.png)
 
 ### Elements
 
@@ -53,7 +55,7 @@ Combat, activities, Wilderness and low stats can each be turned off.
 
 ### Plugins to hide
 
-Overlays from other RuneLite plugins, such as Time Tracking Reminder or a max hit calculator, can't be faded (see [Limitations](#limitations)). Instead, you can list plugins here by name, separated by commas, exactly as they appear in the plugin list. They are switched off once the interface has finished fading and switched back on as soon as it starts to return.
+Overlays from other RuneLite plugins, such as Time Tracking Reminder or Max Hit Calculator, can't be faded (see [Limitations](#limitations)). Instead, you can list plugins here by name, separated by commas, exactly as they appear in the plugin list. They are switched off once the interface has finished fading and switched back on as soon as it starts to return.
 
 They're never marked as disabled in your settings, so if RuneLite closes while the interface is faded they still start as normal next time.
 
@@ -104,6 +106,8 @@ Chatbox, Minimap and orbs, Inventory and side panel, XP drops, Status icons and 
 **Plugins to hide**
 
 A comma-separated list of plugin names, empty by default.
+
+Here's the full settings panel with every section open:
 
 ![Plugin settings](docs/screenshots/settings.png)
 
